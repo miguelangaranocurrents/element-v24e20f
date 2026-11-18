@@ -20,6 +20,7 @@ import {
     type User,
 } from "matrix-js-sdk/src/matrix";
 import { logger } from "matrix-js-sdk/src/logger";
+import escapeHtml from "escape-html";
 import { KnownMembership, type RoomMemberEventContent } from "matrix-js-sdk/src/types";
 import { LinkedText } from "@element-hq/web-shared-components";
 
@@ -73,7 +74,9 @@ export const Commands = [
         args: "<message>",
         description: _td("slash_command|spoiler"),
         runFn: function (cli, roomId, threadId, message = "") {
-            return successSync(ContentHelpers.makeHtmlMessage(message, `<span data-mx-spoiler>${message}</span>`));
+            // Render markdown inside the spoiler (e.g. **bold**); fall back to escaped plain text otherwise.
+            const html = htmlSerializeFromMdIfNeeded(message) ?? escapeHtml(message);
+            return successSync(ContentHelpers.makeHtmlMessage(message, `<span data-mx-spoiler>${html}</span>`));
         },
         category: CommandCategories.messages,
     }),
